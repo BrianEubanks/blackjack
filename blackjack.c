@@ -1,401 +1,254 @@
-#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdbool.h>
-
 #include <time.h>
-#include <ncurses.h>
 
-
-#define DEALER_ROW 2
-
-#define PLAYER_ROW 5
-
-#define CMD_ROW 8
-
-#define SCORE_ROW 15
+//#include <ncurses.h>
 
 #define DECK_SIZE 52
-#define HAND_SIZE 12
+#define HAND_SIZE 10
 #define SHOE_SIZE 1
 
 static uint8_t deck[DECK_SIZE];
-static uint8_t cards[ ] = { 11,2,3,4,5,6,7,8,9,10,10,10,10, 
-			    11,2,3,4,5,6,7,8,9,10,10,10,10,  
-			    11,2,3,4,5,6,7,8,9,10,10,10,10,
-			    11,2,3,4,5,6,7,8,9,10,10,10,10 };
+static uint8_t cards[ ] = { 11,2,3,4,5,6,7,8,9,10,10,10,10,
+                            11,2,3,4,5,6,7,8,9,10,10,10,10,
+                            11,2,3,4,5,6,7,8,9,10,10,10,10,
+                            11,2,3,4,5,6,7,8,9,10,10,10,10 };
 
-static char* cardstr[] = {  "A","2","3","4","5","6","7","8","9","10","J","Q","K",   
-			    "A","2","3","4","5","6","7","8","9","10","J","Q","K",   
-			    "A","2","3","4","5","6","7","8","9","10","J","Q","K",
-			    "A","2","3","4","5","6","7","8","9","10","J","Q","K" };
+static uint8_t cardsindeck;
+
+static char* cardstr[] = {  "A","2","3","4","5","6","7","8","9","10","J","Q","K",
+                            "A","2","3","4","5","6","7","8","9","10","J","Q","K",
+                            "A","2","3","4","5","6","7","8","9","10","J","Q","K",
+                            "A","2","3","4","5","6","7","8","9","10","J","Q","K" };
 
 static uint8_t dealerhand[HAND_SIZE];
 static uint8_t playerhand[HAND_SIZE];
 
-static uint8_t dealerScore;
-static uint8_t playerScore;
-static uint8_t tie;
+static uint8_t dealercards;
+static uint8_t playercards;
+
+static uint8_t dealertotal;
+static uint8_t playertotal;
+
+static uint8_t dealersoft;
+static uint8_t playersoft;
+
+static uint8_t dealerwincount;
+static uint8_t playerwincount;
+static uint8_t tiecount;
 
 
-
-void clearDeck(){
-    for (int i = 0; i < DECK_SIZE; i++){
-        deck[i] = 0;
-    }
+void printHands(){
+    printf("\nDealer: %s *", cardstr[dealerhand[0]]);
+    //for (int i = 0; i < dealercards; i++){
+    //printf(" %s", cardstr[dealerhand[i]]);
+    //}
+    printf("\nPlayer:");
+    for (int i = 0; i < playercards; i++){
+	printf(" %s", cardstr[playerhand[i]]);
+    }   
+    printf("\n");
 }
 
+void printHandsFinal(){
+    printf("\nDealer:");
+    for (int i = 0; i < dealercards; i++){
+	printf(" %s", cardstr[dealerhand[i]]);
+    }
+    printf("\nPlayer:");
+    for (int i = 0; i < playercards; i++){
+	printf(" %s", cardstr[playerhand[i]]);
+    }   
+    printf("\n");
+}
 
+void clearDeck() {
+    for (int i = 0; i < DECK_SIZE; i++){
+	deck[i] = 0;
+    }
+    cardsindeck = SHOE_SIZE * DECK_SIZE;
+}
 
 void clearHands(){
     for (int i = 0; i < HAND_SIZE; i++){
-        dealerhand[i]=0;
-        playerhand[i]=0;
+	dealerhand[i] = 0;
+	playerhand[i] = 0;
     }
+    dealercards = 0;
+    playercards = 0;
 
-    move(PLAYER_ROW+1,0);
-    printw("                                        ");
-
-    move(DEALER_ROW+1,0);
-    printw("                                        ");
-
+    dealertotal = 0;
+    playertotal = 0;
 }
 
-bool isAce(int card){
-    return (card % 13 == 0);
-}
-
-int drawCard(){
-    int c = rand() % DECK_SIZE;
-    int counter = 0;
-    while (deck[c] >= SHOE_SIZE){
+void burnCard(){
+    uint8_t c = rand() % DECK_SIZE;
+    while (deck[c] >=  SHOE_SIZE){
 	c = rand() % DECK_SIZE;
-	counter ++;
-	if (counter > SHOE_SIZE * DECK_SIZE){
-	    move(SCORE_ROW+4,0);
-	    printw("SHOE Empty\n done\n");
-	    refresh();
-	    exit(-1);
-	}
     }
-    deck[c] += 1;
+    deck[c] = SHOE_SIZE;
+    cardsindeck--;
+}
+
+uint8_t drawCard(){
+    uint8_t c = rand() % DECK_SIZE;
+    while (deck[c] >=  SHOE_SIZE){
+	c = rand() % DECK_SIZE;
+    }
+    deck[c]++;
+    cardsindeck--;
     return c;
 }
 
-void playHand(){
-    char a;
-    char a1;
-    bool play = true;
-    bool bust = false;
-    bool blackjack = false;
-    int softp = 0;
-    int softd = 0;
-    bool deal = true;
-    int total = 0;
-    int totald = 0;
-    int c;
-    int h = 0;
-    int hd = 0;
+uint8_t dealerHit(){    
+    uint8_t ret = 0;
 
-
-    dealerScore=0;
-    playerScore=0;
-    tie = 0;
-
-    while(deal) {
-
-	clearHands(); 
-	h = 0;
-	hd = 0;
-	total = 0;
-	totald = 0;
-	softp = 0;
-	softd = 0;
+    dealerhand[dealercards] = drawCard();
+    if (dealerhand[dealercards] % 13 == 0){
+	dealersoft++;
+    }
+    dealertotal += cards[dealerhand[dealercards]];
+    if (dealertotal > 21 && dealersoft > 0){
+	dealertotal -= 10;
+	dealersoft --;
+    }
+    dealercards++;
     
-	play = true;
-	bust = false;
-	blackjack = false;
+    if (dealertotal == 21){
+	ret = 1;
+    } else if (dealertotal > 21){
+	ret = 2;
+    }
 
-    //
-    // Deal Player
-    //
-    move(PLAYER_ROW,0);
-    printw("PLAYER:          \n");
-    c = drawCard();
-    playerhand[h] = c;
-    total += cards[c];
-    if (isAce(c)){
-	softp ++;
-    }
-    if (softp > 0 && total > 21){
-	total -= 10;
-	softp --;
-    }
-    h++;
+    return ret;    
+}
 
-    c = drawCard();
-    playerhand[h] = c;
-    total += cards[c];
-    if (isAce(c)){
-	softp ++;
-    }
-    if (softp > 0 && total > 21){
-	total -= 10;
-	softp --;
-    }
-    h++;
+uint8_t playerHit(){    
+    uint8_t ret = 0;
 
-
-    //
-    // Print Player Hand
-    //
-    for (int i = 0; i < h; i++){
-        printw(" %s ",cardstr[playerhand[i]]);
+    playerhand[playercards] = drawCard();
+    if (playerhand[playercards] % 13 == 0){
+	playersoft++;
     }
+    playertotal += cards[playerhand[playercards]];
+    if (playertotal > 21 && playersoft > 0){
+	playertotal -= 10;
+	playersoft --;
+    }
+    playercards++;
     
-
-    refresh();
-
-    //
-    // Deal Dealer
-    //
-    move(DEALER_ROW,0);
-    printw("DEALER:          \n");
-    c = drawCard();
-    dealerhand[hd] = c;
-    totald += cards[c];
-    if (isAce(c)){
-	softd ++;
-    }
-    if (softd > 0 && totald > 21){
-	totald -= 10;
-	softd --;
-    }
-    hd++;
-
-    c = drawCard();
-    dealerhand[hd] = c;
-    totald += cards[c];
-    if (isAce(c)){
-	softd ++;
-    }
-    if (softd > 0 && totald > 21){
-	totald -= 10;
-	softd --;
-    }
-    hd++;
-
-
-    //
-    // Print Dealer Hand
-    //
-    printw(" %s ",cardstr[dealerhand[0]]);
-    printw(" X ");
-    printw("\n");
-
-    refresh();
-
-
-    //
-    // Check Dealer BlackJack
-    //
-    if (totald == 21){
-	move(DEALER_ROW+1,0);
-	for (int i = 0; i < hd; i++){
-	    printw(" %s ",cardstr[dealerhand[i]]);
-	}
-	if (total == 21){
-	    move(DEALER_ROW,0);
-	    printw("DEALER: PUSH");
-	    move(PLAYER_ROW,0);
-	    printw("PLAYER: PUSH");
-	    play = false;
-	} else {
-	    move(DEALER_ROW,0);
-	    printw("DEALER:    BLACKJACK");
-	    play = false;
-	}
-	blackjack = true;
-	refresh();
-    }
-	
-
-    if (total == 21){
-	move(PLAYER_ROW,0);
-	printw("PLAYER:    BLACKJACK");
-	blackjack = true;
-	play = false;
-	refresh();
+    if (playertotal == 21){
+	ret = 1;
+    } else if (playertotal > 21){
+	ret = 2;
     }
 
-    while (play){
+    return ret;
+}
 
+void dealHands(){
+    burnCard();
 
+    playerHit();
+    playerHit();
+    dealerHit();
+    dealerHit();
 
-	while(true){
-	    move(CMD_ROW+1,0);
-	    printw("[h]it/[s]tand: ");
-	    refresh();
-	    a1 = getch();
+    printHands();
 
-	    if (a1 == 's'){
-		play = false;
+}    
+    
+void playerTurn(uint8_t* state){
+    uint8_t ret = 0;
+    printf("h or s: ");
+    char a1 = getchar();
+
+    while (true){
+	if (a1 == 's'){
+	    break;
+	} else if (a1 =='h'){
+	    ret = playerHit();
+	    if (ret == 2){
 		break;
-	    } else if (a1 =='h'){
-		c = drawCard();
-		playerhand[h] = c;
-		total += cards[c];
-		if (isAce(c)){
-		    softp ++;
-		}
-		if (softp > 0 && total > 21){
-		    total -= 10;
-		    softp --;
-		}
-		h++;
-		break;
-
-	    } else {
-		//printw("h or s\n");
-		continue;
 	    }
-        }
-
-        //
-        // Print Hand
-        //
-	move(PLAYER_ROW+1,0);
-        for (int i = 0; i < h; i++){
-            printw(" %s ",cardstr[playerhand[i]]);
-        }
-        printw("\n");
-
-
-        //
-        // Check Score
-        //
-        if (total > 21){
-            play = false;
-	    bust = true;
 	}
-
-        refresh();
-
+	printHands(); 
+	a1 = getchar();
     }
+    printHands();
+    *state = ret;    
+}
 
-    move(PLAYER_ROW,0);
-    printw("PLAYER: %d ", total);
-    if (bust){
-	printw("bust");
-	dealerScore++;
-    }
+void dealerTurn(uint8_t* state){
+    uint8_t ret = 0;
 
-    //
-    // Play Dealer
-    //
-    //
-    // Print Dealer Hand
-    //
-    if (!bust && !blackjack){
-	move(DEALER_ROW+1,0);
-	for (int i = 0; i < hd; i++){
-	    printw(" %s ",cardstr[dealerhand[i]]);
-	}
-	printw("\n");
-
-	while(totald < 17){
-	    c = drawCard();
-	    dealerhand[hd] = c;
-	    totald += cards[c];
-	    if (isAce(c)){
-		softd ++;
-	    }
-	    if (softd > 0 && totald > 21){
-		totald -= 10;
-		softd --;
-	    }
-	    hd++;
-	    move(DEALER_ROW+1,0);
-	    for (int i = 0; i < hd; i++){
-		printw(" %s ",cardstr[dealerhand[i]]);
-	    }
-	    refresh();
-	}
-    
-	//
-	// Check Score
-	//
-	move(DEALER_ROW,0);
-	printw("DEALER: %d ", totald);
-	if (totald > 21){
-	    printw("bust");
-	    playerScore++;
-	    bust = true;
-	}
-
-	refresh();
-
-    }
-
-    if (!bust){
-	if (totald > total){
-	    dealerScore++;
-	} else if (totald < total){
-	    playerScore++;
-	} else {
-	    tie++;
+    while (dealertotal < 17){
+	ret = dealerHit();
+	if (ret == 2){
+	    break;
 	}
     }
-
-    //
-    // Print Score
-    //
-    move(SCORE_ROW,0);
-    printw("DEALER: %d\nPLAYER: %d\nTIE: %d\n",dealerScore,playerScore,tie);
-
-
-
-    while(true){
-	move(CMD_ROW+1,0);
-	printw("[d]eal/[q]uit: ");
-	refresh();
-	a1 = getch();
-
-	if (a1 == 'q'){
-	    deal = false;
-	} else if (a1 =='d'){
-	    deal = true;
-	} else {
-	    continue;
-	}
-	break;
-    }
-
-
-    } // deal
-
-    move(SCORE_ROW+4,0);
-    printw("\ndone\n");
-    refresh();
-
-
-    getch();
-   
-
+    printHandsFinal();
+    *state = ret;    
 }
 
 
-int main() {
-    initscr();
-    raw();
-    printw("Blackjack");
-    refresh();
+bool playHand(){
+
+    uint8_t state = 0;
+
+    clearHands();
+
+    // Bet
+
+    dealHands();
+    
+    // Insurance
+
+    // Split?
+
+    // Dbl?
+
+    playerTurn(&state);
+
+    dealerTurn(&state);
+
+    return false;
+
+}
+    
+
+void playGame(){
+
+    char p = '\0';
+
+    clearDeck();
+
+    while(true){
+	playHand();
+	
+	printHandsFinal();
+    
+	
+	printf("deal or quit:");
+	fflush(0);
+	p = getchar();
+	
+	if (p != 'd'){
+	    printf("\n*d%c\n",p);	
+	    break;
+	}
+
+    }
+}
+
+
+int main(int argc, char** argv){
 
     srand(time(NULL));   // Initialization, should only be called once.
 
-    clearDeck();
-    playHand();
-
-    endwin();
+    playGame();   
 
 }
