@@ -8,12 +8,29 @@
 
 #include "deck.h"
 
+
+//
+// Hand Status
+//   InPlay < 21
+//   Done   = 21 or Stand
+//   Bust   > 21
+//
 typedef enum {
     InPlay,
     Done,
     Bust
 } handstatus;
 
+//
+// Hand Struct
+//
+// cards: 	List of cards in the hand that have been dealt
+// num:   	Number of cards that have been dealt
+// value: 	Value of the hand
+// softaces: 	Number of softaces in the hand.
+// bet:		Bet Value of the hand
+// status:      Hand Status
+//
 typedef struct _hand {
     uint8_t 	cards[HAND_SIZE];
     uint8_t 	num;
@@ -30,8 +47,6 @@ hand dealerhand;
 hand playerhand;
 
 
-
-
 //
 // Game Stats
 //
@@ -39,14 +54,7 @@ static uint8_t dealerwincount;
 static uint8_t playerwincount;
 static uint8_t tiecount;
 
-//
-// State Note
-//
-// 0  < 21 InPlay
-// 1  = 21 Win
-// 2  > 21 Bust
-//
-static uint8_t handstate;
+
 
 void printHands(){
     printf("\nDealer: %s *", cardstr[dealerhand.cards[0]]);
@@ -80,6 +88,16 @@ void clearHands(){
 
     dealerhand.value = 0;
     playerhand.value = 0;
+
+    playerhand.softaces = 0;
+    dealerhand.softaces = 0;
+
+    playerhand.bet = 0;
+    dealerhand.bet = 0;
+
+
+    playerhand.status = 0;
+    dealerhand.status = 0;
 }
 
 
@@ -114,6 +132,7 @@ uint8_t playerHit(){
 	playerhand.softaces++;
     }
     playerhand.value += getCardValue(playerhand.cards[playerhand.num]);
+    
     if (playerhand.value > 21 && playerhand.softaces > 0){
 	playerhand.value -= 10;
 	playerhand.softaces --;
@@ -125,7 +144,7 @@ uint8_t playerHit(){
     } else if (playerhand.value > 21){
 	ret = 2;
     }
-
+    
     return ret;
 }
 
@@ -150,7 +169,7 @@ bool isStateInPlay(uint8_t* state){
 
 void checkPlayerBlackJack(){
     if (playerhand.value == 21){
-	handstate = 1;
+	playerhand.status = Done;
     } 
 }
     
@@ -165,6 +184,7 @@ void playerTurn(){
 
 
     	if (a1 == 's'){
+	    ret = Done;
 	    break;
 	} else if (a1 == 'd' && playerhand.num == 2){
 	    
@@ -189,7 +209,7 @@ void playerTurn(){
     } while (true);
 
     
-    handstate = ret;    
+    playerhand.status = ret;    
 }
 
 void dealerTurn(){
@@ -202,18 +222,15 @@ void dealerTurn(){
 	}
     }
     //printHandsFinal();
-    handstate = ret;    
+    playerhand.status = ret;    
 }
 
 
-bool playHand(){
-
-    handstate = 0;
+bool playHand(){ 
 
     clearHands();
 
     // Bet
-
     dealHands();
 
     // Player Blackjack
@@ -245,15 +262,15 @@ void playGame(){
 	
 	printHandsFinal();
     
-	
-	printf("deal or quit:");
-	fflush(0);
+	fflush(stdin);
+	printf("deal or quit:");	
 	p = getchar();
 	
 	if (p != 'd'){
 	    printf("\n*d%c\n",p);	
 	    break;
 	}
+
 
     }
 }
