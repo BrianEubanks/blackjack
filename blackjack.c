@@ -18,6 +18,7 @@ typedef struct _hand {
     uint8_t 	cards[HAND_SIZE];
     uint8_t 	num;
     uint8_t 	value;
+    uint8_t 	softaces;
     uint8_t 	bet;
     handstatus 	status;
 } hand;
@@ -25,17 +26,9 @@ typedef struct _hand {
 //
 // Hands
 //
-static uint8_t dealerhand[HAND_SIZE];
-static uint8_t playerhand[HAND_SIZE];
+hand dealerhand;
+hand playerhand;
 
-static uint8_t dealercards;
-static uint8_t playercards;
-
-static uint8_t dealertotal;
-static uint8_t playertotal;
-
-static uint8_t dealersoft;
-static uint8_t playersoft;
 
 
 
@@ -56,57 +49,57 @@ static uint8_t tiecount;
 static uint8_t handstate;
 
 void printHands(){
-    printf("\nDealer: %s *", cardstr[dealerhand[0]]);
+    printf("\nDealer: %s *", cardstr[dealerhand.cards[0]]);
     
     printf("\nPlayer:");
-    for (int i = 0; i < playercards; i++){
-	printf(" %s", cardstr[playerhand[i]]);
+    for (int i = 0; i < playerhand.num; i++){
+	printf(" %s", cardstr[playerhand.cards[i]]);
     }   
     printf("\n");
 }
 
 void printHandsFinal(){
     printf("\nDealer:");
-    for (int i = 0; i < dealercards; i++){
-	printf(" %s", cardstr[dealerhand[i]]);
+    for (int i = 0; i < dealerhand.num; i++){
+	printf(" %s", cardstr[dealerhand.cards[i]]);
     }
     printf("\nPlayer:");
-    for (int i = 0; i < playercards; i++){
-	printf(" %s", cardstr[playerhand[i]]);
+    for (int i = 0; i < playerhand.num; i++){
+	printf(" %s", cardstr[playerhand.cards[i]]);
     }   
     printf("\n");
 }
 
 void clearHands(){
     for (int i = 0; i < HAND_SIZE; i++){
-	dealerhand[i] = 0;
-	playerhand[i] = 0;
+	dealerhand.cards[i] = 0;
+	playerhand.cards[i] = 0;
     }
-    dealercards = 0;
-    playercards = 0;
+    dealerhand.num = 0;
+    playerhand.num = 0;
 
-    dealertotal = 0;
-    playertotal = 0;
+    dealerhand.value = 0;
+    playerhand.value = 0;
 }
 
 
 uint8_t dealerHit(){    
     uint8_t ret = 0;
 
-    dealerhand[dealercards] = drawCard();
-    if (dealerhand[dealercards] % 13 == 0){
-	dealersoft++;
+    dealerhand.cards[dealerhand.num] = drawCard();
+    if (dealerhand.cards[dealerhand.num] % 13 == 0){
+	dealerhand.softaces++;
     }
-    dealertotal += getCardValue(dealerhand[dealercards]);
-    if (dealertotal > 21 && dealersoft > 0){
-	dealertotal -= 10;
-	dealersoft --;
+    dealerhand.value += getCardValue(dealerhand.cards[dealerhand.num]);
+    if (dealerhand.value > 21 && dealerhand.softaces > 0){
+	dealerhand.value -= 10;
+	dealerhand.softaces --;
     }
-    dealercards++;
+    dealerhand.num++;
     
-    if (dealertotal == 21){
+    if (dealerhand.value == 21){
 	ret = 1;
-    } else if (dealertotal > 21){
+    } else if (dealerhand.value > 21){
 	ret = 2;
     }
 
@@ -116,20 +109,20 @@ uint8_t dealerHit(){
 uint8_t playerHit(){    
     uint8_t ret = 0;
 
-    playerhand[playercards] = drawCard();
-    if (playerhand[playercards] % 13 == 0){
-	playersoft++;
+    playerhand.cards[playerhand.num] = drawCard();
+    if (playerhand.cards[playerhand.num] % 13 == 0){
+	playerhand.softaces++;
     }
-    playertotal += getCardValue(playerhand[playercards]);
-    if (playertotal > 21 && playersoft > 0){
-	playertotal -= 10;
-	playersoft --;
+    playerhand.value += getCardValue(playerhand.cards[playerhand.num]);
+    if (playerhand.value > 21 && playerhand.softaces > 0){
+	playerhand.value -= 10;
+	playerhand.softaces --;
     }
-    playercards++;
+    playerhand.num++;
     
-    if (playertotal == 21){
+    if (playerhand.value == 21){
 	ret = 1;
-    } else if (playertotal > 21){
+    } else if (playerhand.value > 21){
 	ret = 2;
     }
 
@@ -156,7 +149,7 @@ bool isStateInPlay(uint8_t* state){
 }
 
 void checkPlayerBlackJack(){
-    if (playertotal == 21){
+    if (playerhand.value == 21){
 	handstate = 1;
     } 
 }
@@ -173,7 +166,7 @@ void playerTurn(){
 
     	if (a1 == 's'){
 	    break;
-	} else if (a1 == 'd' && playercards == 2){
+	} else if (a1 == 'd' && playerhand.num == 2){
 	    
 	    // only on 1st one
 	    // bet
@@ -202,7 +195,7 @@ void playerTurn(){
 void dealerTurn(){
     uint8_t ret = 0;
 
-    while (dealertotal < 17){
+    while (dealerhand.value < 17){
 	ret = dealerHit();
 	if (ret == 2){
 	    break;
