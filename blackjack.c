@@ -57,9 +57,7 @@ static uint8_t handstate;
 
 void printHands(){
     printf("\nDealer: %s *", cardstr[dealerhand[0]]);
-    //for (int i = 0; i < dealercards; i++){
-    //printf(" %s", cardstr[dealerhand[i]]);
-    //}
+    
     printf("\nPlayer:");
     for (int i = 0; i < playercards; i++){
 	printf(" %s", cardstr[playerhand[i]]);
@@ -99,7 +97,7 @@ uint8_t dealerHit(){
     if (dealerhand[dealercards] % 13 == 0){
 	dealersoft++;
     }
-    dealertotal += cards[dealerhand[dealercards]];
+    dealertotal += getCardValue(dealerhand[dealercards]);
     if (dealertotal > 21 && dealersoft > 0){
 	dealertotal -= 10;
 	dealersoft --;
@@ -122,7 +120,7 @@ uint8_t playerHit(){
     if (playerhand[playercards] % 13 == 0){
 	playersoft++;
     }
-    playertotal += cards[playerhand[playercards]];
+    playertotal += getCardValue(playerhand[playercards]);
     if (playertotal > 21 && playersoft > 0){
 	playertotal -= 10;
 	playersoft --;
@@ -166,12 +164,14 @@ void checkPlayerBlackJack(){
 void playerTurn(){
     uint8_t ret = 0;
     
+    do {
+	fflush(stdin);
+	printf("h or s: ");
 
-    printf("h or s: ");
-    char a1 = getchar();
+	char a1 = getchar();
 
-    while (true){
-	if (a1 == 's'){
+
+    	if (a1 == 's'){
 	    break;
 	} else if (a1 == 'd' && playercards == 2){
 	    
@@ -189,9 +189,12 @@ void playerTurn(){
 		break;
 	    }
 	}
-	
-	a1 = getchar();
-    }
+
+
+
+    
+    } while (true);
+
     
     handstate = ret;    
 }

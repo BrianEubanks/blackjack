@@ -6,7 +6,7 @@
 //
 // Card Data
 //
-const uint8_t cards[] = {11,2,3,4,5,6,7,8,9,10,10,10,10,
+static const uint8_t cards[] = {11,2,3,4,5,6,7,8,9,10,10,10,10,
                                 11,2,3,4,5,6,7,8,9,10,10,10,10,
                                 11,2,3,4,5,6,7,8,9,10,10,10,10,
                                 11,2,3,4,5,6,7,8,9,10,10,10,10 };
@@ -46,4 +46,7 @@ uint8_t drawCard(){
     return c;
 }
 
+uint8_t getCardValue(uint8_t cardindex){
+    return cards[cardindex];
+}
 
