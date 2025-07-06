@@ -4,25 +4,27 @@
 #include <stdbool.h>
 #include <time.h>
 
-//#include <ncurses.h>
+#include "rules.h"
 
-#define DECK_SIZE 52
-#define HAND_SIZE 10
-#define SHOE_SIZE 1
+#include "deck.h"
 
-static uint8_t deck[DECK_SIZE];
-static uint8_t cards[ ] = { 11,2,3,4,5,6,7,8,9,10,10,10,10,
-                            11,2,3,4,5,6,7,8,9,10,10,10,10,
-                            11,2,3,4,5,6,7,8,9,10,10,10,10,
-                            11,2,3,4,5,6,7,8,9,10,10,10,10 };
+typedef enum {
+    InPlay,
+    Done,
+    Bust
+} handstatus;
 
-static uint8_t cardsindeck;
+typedef struct _hand {
+    uint8_t 	cards[HAND_SIZE];
+    uint8_t 	num;
+    uint8_t 	value;
+    uint8_t 	bet;
+    handstatus 	status;
+} hand;
 
-static char* cardstr[] = {  "A","2","3","4","5","6","7","8","9","10","J","Q","K",
-                            "A","2","3","4","5","6","7","8","9","10","J","Q","K",
-                            "A","2","3","4","5","6","7","8","9","10","J","Q","K",
-                            "A","2","3","4","5","6","7","8","9","10","J","Q","K" };
-
+//
+// Hands
+//
 static uint8_t dealerhand[HAND_SIZE];
 static uint8_t playerhand[HAND_SIZE];
 
@@ -35,10 +37,23 @@ static uint8_t playertotal;
 static uint8_t dealersoft;
 static uint8_t playersoft;
 
+
+
+//
+// Game Stats
+//
 static uint8_t dealerwincount;
 static uint8_t playerwincount;
 static uint8_t tiecount;
 
+//
+// State Note
+//
+// 0  < 21 InPlay
+// 1  = 21 Win
+// 2  > 21 Bust
+//
+static uint8_t handstate;
 
 void printHands(){
     printf("\nDealer: %s *", cardstr[dealerhand[0]]);
@@ -64,13 +79,6 @@ void printHandsFinal(){
     printf("\n");
 }
 
-void clearDeck() {
-    for (int i = 0; i < DECK_SIZE; i++){
-	deck[i] = 0;
-    }
-    cardsindeck = SHOE_SIZE * DECK_SIZE;
-}
-
 void clearHands(){
     for (int i = 0; i < HAND_SIZE; i++){
 	dealerhand[i] = 0;
@@ -83,24 +91,6 @@ void clearHands(){
     playertotal = 0;
 }
 
-void burnCard(){
-    uint8_t c = rand() % DECK_SIZE;
-    while (deck[c] >=  SHOE_SIZE){
-	c = rand() % DECK_SIZE;
-    }
-    deck[c] = SHOE_SIZE;
-    cardsindeck--;
-}
-
-uint8_t drawCard(){
-    uint8_t c = rand() % DECK_SIZE;
-    while (deck[c] >=  SHOE_SIZE){
-	c = rand() % DECK_SIZE;
-    }
-    deck[c]++;
-    cardsindeck--;
-    return c;
-}
 
 uint8_t dealerHit(){    
     uint8_t ret = 0;
@@ -158,30 +148,55 @@ void dealHands(){
 
     printHands();
 
-}    
+}
+
+bool isStateInPlay(uint8_t* state){
+    if (*state == 0){
+	return true;
+    }
+    return false;
+}
+
+void checkPlayerBlackJack(){
+    if (playertotal == 21){
+	handstate = 1;
+    } 
+}
     
-void playerTurn(uint8_t* state){
+void playerTurn(){
     uint8_t ret = 0;
+    
+
     printf("h or s: ");
     char a1 = getchar();
 
     while (true){
 	if (a1 == 's'){
 	    break;
+	} else if (a1 == 'd' && playercards == 2){
+	    
+	    // only on 1st one
+	    // bet
+	    ret = playerHit();
+	    printHands();
+	    break;
+	} else if (a1 == 'x'){
+	    
 	} else if (a1 =='h'){
 	    ret = playerHit();
+	    printHands(); 
 	    if (ret == 2){
 		break;
 	    }
 	}
-	printHands(); 
+	
 	a1 = getchar();
     }
-    printHands();
-    *state = ret;    
+    
+    handstate = ret;    
 }
 
-void dealerTurn(uint8_t* state){
+void dealerTurn(){
     uint8_t ret = 0;
 
     while (dealertotal < 17){
@@ -190,30 +205,33 @@ void dealerTurn(uint8_t* state){
 	    break;
 	}
     }
-    printHandsFinal();
-    *state = ret;    
+    //printHandsFinal();
+    handstate = ret;    
 }
 
 
 bool playHand(){
 
-    uint8_t state = 0;
+    handstate = 0;
 
     clearHands();
 
     // Bet
 
     dealHands();
+
+    // Player Blackjack
+    checkPlayerBlackJack();
     
     // Insurance
-
+    
     // Split?
 
     // Dbl?
 
-    playerTurn(&state);
+    playerTurn();
 
-    dealerTurn(&state);
+    dealerTurn();
 
     return false;
 
