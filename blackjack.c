@@ -7,38 +7,8 @@
 #include "rules.h"
 
 #include "deck.h"
+#include "display.h"
 
-
-//
-// Hand Status
-//   InPlay < 21
-//   Done   = 21 or Stand
-//   Bust   > 21
-//
-typedef enum {
-    InPlay,
-    Done,
-    Bust
-} handstatus;
-
-//
-// Hand Struct
-//
-// cards: 	List of cards in the hand that have been dealt
-// num:   	Number of cards that have been dealt
-// value: 	Value of the hand
-// softaces: 	Number of softaces in the hand.
-// bet:		Bet Value of the hand
-// status:      Hand Status
-//
-typedef struct _hand {
-    uint8_t 	cards[HAND_SIZE];
-    uint8_t 	num;
-    uint8_t 	value;
-    uint8_t 	softaces;
-    uint8_t 	bet;
-    handstatus 	status;
-} hand;
 
 //
 // Hands
@@ -56,27 +26,6 @@ static uint8_t tiecount;
 
 
 
-void printHands(){
-    printf("\nDealer: %s *", cardstr[dealerhand.cards[0]]);
-    
-    printf("\nPlayer:");
-    for (int i = 0; i < playerhand.num; i++){
-	printf(" %s", cardstr[playerhand.cards[i]]);
-    }   
-    printf("\n");
-}
-
-void printHandsFinal(){
-    printf("\nDealer:");
-    for (int i = 0; i < dealerhand.num; i++){
-	printf(" %s", cardstr[dealerhand.cards[i]]);
-    }
-    printf("\nPlayer:");
-    for (int i = 0; i < playerhand.num; i++){
-	printf(" %s", cardstr[playerhand.cards[i]]);
-    }   
-    printf("\n");
-}
 
 void clearHands(){
     for (int i = 0; i < HAND_SIZE; i++){
@@ -95,14 +44,12 @@ void clearHands(){
     playerhand.bet = 0;
     dealerhand.bet = 0;
 
-
     playerhand.status = 0;
     dealerhand.status = 0;
 }
 
 
-uint8_t dealerHit(){    
-    uint8_t ret = 0;
+void dealerHit(){    
 
     dealerhand.cards[dealerhand.num] = drawCard();
     if (dealerhand.cards[dealerhand.num] % 13 == 0){
@@ -116,16 +63,14 @@ uint8_t dealerHit(){
     dealerhand.num++;
     
     if (dealerhand.value == 21){
-	ret = 1;
+	dealerhand.status = Done;
     } else if (dealerhand.value > 21){
-	ret = 2;
+	dealerhand.status = Bust;
     }
 
-    return ret;    
 }
 
-uint8_t playerHit(){    
-    uint8_t ret = 0;
+void playerHit(){    
 
     playerhand.cards[playerhand.num] = drawCard();
     if (playerhand.cards[playerhand.num] % 13 == 0){
@@ -140,12 +85,11 @@ uint8_t playerHit(){
     playerhand.num++;
     
     if (playerhand.value == 21){
-	ret = 1;
+	playerhand.status = Done;
     } else if (playerhand.value > 21){
-	ret = 2;
+	playerhand.status = Bust;
     }
     
-    return ret;
 }
 
 void dealHands(){
@@ -156,97 +100,119 @@ void dealHands(){
     dealerHit();
     dealerHit();
 
-    printHands();
+    printHands(dealerhand,playerhand);
 
 }
-
-bool isStateInPlay(uint8_t* state){
-    if (*state == 0){
+    
+bool isPair(hand playerhand){
+    if (playerhand.cards[0] % 13 == playerhand.cards[1] % 13){
 	return true;
     }
     return false;
 }
 
-void checkPlayerBlackJack(){
+void playerTurn(){
+    
+    bool canDouble = true;
+    bool canSplit = isPair(playerhand);
+
     if (playerhand.value == 21){
 	playerhand.status = Done;
-    } 
-}
-    
-void playerTurn(){
-    uint8_t ret = 0;
+	return;
+    }
     
     do {
 	fflush(stdin);
-	printf("h or s: ");
-
-	char a1 = getchar();
-
-
-    	if (a1 == 's'){
-	    ret = Done;
-	    break;
-	} else if (a1 == 'd' && playerhand.num == 2){
-	    
-	    // only on 1st one
-	    // bet
-	    ret = playerHit();
-	    printHands();
-	    break;
-	} else if (a1 == 'x'){
-	    
-	} else if (a1 =='h'){
-	    ret = playerHit();
-	    printHands(); 
-	    if (ret == 2){
-		break;
+	printf("[h][s]");
+	if (canDouble){
+	    printf("[d]");
+	    if (canSplit){
+		printf("[x]");
 	    }
 	}
+	printf("\n");
+	char a1 = getchar();
 
-
-
+    	if (a1 == 's'){
+	    playerhand.status = Done;
+	    break;
+	} else if (a1 == 'd' && canDouble){
+	    playerHit();
+	    playerhand.bet *= 2;
+	    if (playerhand.status == InPlay){
+		playerhand.status = Done;
+	    }	
+	    printHands(dealerhand,playerhand);
+	    break;
+	} else if (a1 == 'x' && canSplit){
+	    //
+	    // Split Allocate another hand and do split routine
+	    //
+	    printf("split not implemented yet\n");
+	} else if (a1 =='h'){
+	    playerHit();
+	    printHands(dealerhand,playerhand); 
+	    if (playerhand.status != InPlay){
+		break;
+	    }
+	} else {
+	    continue;
+	}
+	canDouble = false;
+	canSplit = false;
     
     } while (true);
 
     
-    playerhand.status = ret;    
 }
 
 void dealerTurn(){
-    uint8_t ret = 0;
+
+    if (playerhand.status == Bust){
+	return;
+    }
 
     while (dealerhand.value < 17){
-	ret = dealerHit();
-	if (ret == 2){
-	    break;
-	}
+	dealerHit();
     }
-    //printHandsFinal();
-    playerhand.status = ret;    
+    
 }
 
 
-bool playHand(){ 
+void scoreHands(){
+    if (playerhand.status == Bust){
+	dealerwincount++;
+	return;
+    }
+
+    if (dealerhand.status == Bust){
+	playerwincount++;
+	return;
+    }
+
+    if (playerhand.value > dealerhand.value){
+	playerwincount++;
+    } else if (dealerhand.value > playerhand.value){
+	dealerwincount++;
+    } else {
+	tiecount++;
+    }
+
+    return;
+}
+
+void playHand(){ 
 
     clearHands();
 
     // Bet
     dealHands();
 
-    // Player Blackjack
-    checkPlayerBlackJack();
-    
-    // Insurance
-    
-    // Split?
-
-    // Dbl?
-
     playerTurn();
 
     dealerTurn();
 
-    return false;
+    scoreHands();
 
 }
     
@@ -260,14 +226,20 @@ void playGame(){
     while(true){
 	playHand();
 	
-	printHandsFinal();
+	printHandsFinal(dealerhand, playerhand);
     
 	fflush(stdin);
 	printf("deal or quit:");	
 	p = getchar();
 	
 	if (p != 'd'){
-	    printf("\n*d%c\n",p);	
+	    printf("\ndone:%c\n",p);	
+	    
+	    printf("Stats:\n");
+	    printf(" Wins: %d\n",playerwincount);
+	    printf(" Loss: %d\n",dealerwincount);
+	    printf(" Push: %d\n",tiecount);
+
 	    break;
 	}
 
