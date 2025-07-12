@@ -11,3 +11,5 @@ uint8_t drawCard();
 
 uint8_t getCardValue(uint8_t cardindex);
 
+int8_t getRunningCount();
+

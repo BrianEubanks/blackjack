@@ -93,7 +93,7 @@ void playerHit(){
 }
 
 void dealHands(){
-    burnCard();
+    //burnCard();
 
     playerHit();
     playerHit();
@@ -223,28 +223,37 @@ void playGame(){
 
     clearDeck();
 
-    while(true){
+    
+    while (true){
+
 	playHand();
 	
-	printHandsFinal(dealerhand, playerhand);
-    
-	fflush(stdin);
-	printf("deal or quit:");	
-	p = getchar();
-	
-	if (p != 'd'){
-	    printf("\ndone:%c\n",p);	
-	    
-	    printf("Stats:\n");
-	    printf(" Wins: %d\n",playerwincount);
-	    printf(" Loss: %d\n",dealerwincount);
-	    printf(" Push: %d\n",tiecount);
+	printHandsFinal(dealerhand, playerhand);	
+ 
+	do {
+	    fflush(stdin);
+	    printf("[d][c][q]\n");	
+	    p = getchar();
 
+	    //if (p == 'c'){
+		printf("running count: %d\n",getRunningCount());
+	    //}
+	} while (p != 'd' && p != 'q');
+
+	if (p == 'q'){
 	    break;
 	}
 
-
     }
+
+	
+    printf("\ndone:%c\n",p);	
+	    
+    printf("Stats:\n");
+    printf(" Wins: %d\n",playerwincount);
+    printf(" Loss: %d\n",dealerwincount);
+    printf(" Push: %d\n",tiecount);
+
 }
 
 
