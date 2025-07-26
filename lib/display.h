@@ -3,6 +3,11 @@
 
 #include "rules.h"
 
+void initializeDisplay();
+void closeDisplay();
+
+char getInput();
+
 void printHands(hand dealerhand, hand playerhand);
 void printHandsFinal(hand dealerhand, hand playerhand);
 

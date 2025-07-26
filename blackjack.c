@@ -275,7 +275,7 @@ void playerTurn(){
     }
     
     do {
-	fflush(stdin);
+	
 	printf("[h][s]");
 	if (canDouble){
 	    printf("[d]");
@@ -284,7 +284,8 @@ void playerTurn(){
 	    }
 	}
 	printf("\n");
-	char a1 = getchar();
+	
+	char a1 = getInput();
 
 	checkBasicStrategy (a1,canDouble,canSplit);
 
@@ -387,9 +388,9 @@ void playGame(){
 	printHandsFinal(dealerhand, playerhand);	
  
 	do {
-	    fflush(stdin);
+	    
 	    printf("[d][c][q]\n");	
-	    p = getchar();
+	    p = getInput();
 
 	    if (p == 'c'){
 		printf("running count: %d\n",getRunningCount());
@@ -419,6 +420,7 @@ int main(int argc, char** argv){
 
     //printTable();
 
+    initializeDisplay();
     playGame();   
 
 }

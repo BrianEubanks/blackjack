@@ -8,6 +8,17 @@ const char* cardstr[] = {"A","2","3","4","5","6","7","8","9","10","J","Q","K",
                          "A","2","3","4","5","6","7","8","9","10","J","Q","K",
                          "A","2","3","4","5","6","7","8","9","10","J","Q","K" };
 
+void initializeDisplay(){
+    return;
+}
+
+char getInput(){
+    fflush(stdin);
+    printf("\n");
+    char a1 = getchar();
+    return a1;
+}
+
 void printHands(hand dealerhand, hand playerhand){
     printf("\nDealer: %s *", cardstr[dealerhand.cards[0]]);
 
