@@ -12,6 +12,29 @@ void initializeDisplay(){
     return;
 }
 
+void clearScreen(){}
+
+void closeDisplay(){}
+
+void showGameOverPrompt(){
+    printf("[d][c][q]\n");
+}
+
+void showGamePrompt(bool canDouble, bool canSplit){
+    printf("[h][s]");
+    if (canDouble){
+        printf("[d]");
+        if (canSplit){
+            printf("[x]");
+        }
+    }
+    printf("\n");
+}
+
+void showRunningCount(int count){
+    printf("running count: %d\n",count);
+}
+
 char getInput(){
     fflush(stdin);
     printf("\n");

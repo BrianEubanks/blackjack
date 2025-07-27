@@ -193,6 +193,25 @@ void initializeDisplay(){
 
 }
 
+void showGameOverPrompt(){
+    printf("[d][c][q]\n");
+}
+
+void showGamePrompt(bool canDouble, bool canSplit){
+    printf("[h][s]");
+    if (canDouble){
+        printf("[d]");
+        if (canSplit){
+            printf("[x]");
+        }
+    }
+    printf("\n");
+}
+
+void showRunningCount(int count){
+    printf("running count: %d\n",count);
+}
+
 
 void clearScreen(){
     // Setting the color to be GREEN with 100% opaque (0% trasparent).
@@ -243,7 +262,7 @@ void printHands(hand dealerhand, hand playerhand){
         for (int x = 0; x < 16; x++){
             printf("\n");
             for (int y = 0; y < 16; y++){
-                printf("%d",sprites[cardsp][x/2][y/2]);
+                //printf("%d",sprites[cardsp][x/2][y/2]);
                 if (sprites[cardsp][y/2][x/2] == 1){
                     if (card > 25){
                         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -282,7 +301,7 @@ void printHands(hand dealerhand, hand playerhand){
 	for (int x = 0; x < 16; x++){
 	    printf("\n");
 	    for (int y = 0; y < 16; y++){
-		printf("%d",sprites[cardsp][x/2][y/2]);
+		//printf("%d",sprites[cardsp][x/2][y/2]);
 		if (sprites[cardsp][y/2][x/2] == 1){
 		    if (card > 25){
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -323,7 +342,7 @@ void printHandsFinal(hand dealerhand, hand playerhand){
     for (int x = 0; x < 16; x++){
         printf("\n");
         for (int y = 0; y < 16; y++){
-            printf("%d",sprites[cardsp][x/2][y/2]);
+            //printf("%d",sprites[cardsp][x/2][y/2]);
             if (sprites[cardsp][y/2][x/2] == 1){
                 if (card > 25){
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

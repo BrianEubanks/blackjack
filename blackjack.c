@@ -277,16 +277,8 @@ void playerTurn(){
     }
     
     do {
-	
-	printf("[h][s]");
-	if (canDouble){
-	    printf("[d]");
-	    if (canSplit){
-		printf("[x]");
-	    }
-	}
-	printf("\n");
-	
+
+	showGamePrompt(canDouble, canSplit);	
 	char a1 = getInput();
 
 	checkBasicStrategy (a1,canDouble,canSplit);
@@ -391,12 +383,14 @@ void playGame(){
  
 	do {
 	    
-	    printf("[d][c][q]\n");	
+	    showGameOverPrompt();
+
 	    p = getInput();
 
 	    if (p == 'c'){
-		printf("running count: %d\n",getRunningCount());
+		showRunningCount(getRunningCount());
 	    }
+
 	} while (p != 'd' && p != 'q');
 
 	if (p == 'q'){
