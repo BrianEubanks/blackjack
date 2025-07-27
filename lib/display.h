@@ -4,6 +4,7 @@
 #include "rules.h"
 
 void initializeDisplay();
+void clearScreen();
 void closeDisplay();
 
 char getInput();

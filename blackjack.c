@@ -199,6 +199,8 @@ void clearHands(){
 
     playerhand.status = 0;
     dealerhand.status = 0;
+
+    clearScreen();
 }
 
 
