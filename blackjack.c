@@ -82,21 +82,21 @@ static uint8_t playerwincount;
 static uint8_t tiecount;
 
 void printTable(){
-    printf("%d\n",sizeof(hard_table));
+    printf("%ld\n",sizeof(hard_table));
     for (int i = 0; i < 17; i++){	
 	for (int j = 0; j < 10; j++){
 	    printf("%d ",hard_table[i][j]);
 	}
 	printf("\n");
     }
-    printf("%d\n",sizeof(soft_table));
+    printf("%ld\n",sizeof(soft_table));
     for (int i = 0; i < 8; i++){	
 	for (int j = 0; j < 10; j++){
 	    printf("%d ",soft_table[i][j]);
 	}
 	printf("\n");
     }
-    printf("%d\n",sizeof(split_table));
+    printf("%ld\n",sizeof(split_table));
     for (int i = 0; i < 10; i++){	
 	for (int j = 0; j < 10; j++){
 	    printf("%d ",split_table[i][j]);
@@ -400,7 +400,7 @@ void playGame(){
     }
 
 	
-    printf("\ndone:%c\n",p);	
+    
 	    
     printf("Stats:\n");
     printf(" Wins: %d\n",playerwincount);
