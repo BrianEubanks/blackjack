@@ -204,56 +204,35 @@ void clearHands(){
 }
 
 
-void dealerHit(){    
+void hitHand(hand* h){    
 
-    dealerhand.cards[dealerhand.num] = drawCard();
-    if (dealerhand.cards[dealerhand.num] % 13 == 0){
-	dealerhand.softaces++;
+    h->cards[h->num] = drawCard();
+    if (h->cards[h->num] % 13 == 0){
+	h->softaces++;
     }
-    dealerhand.value += getCardValue(dealerhand.cards[dealerhand.num]);
-    if (dealerhand.value > 21 && dealerhand.softaces > 0){
-	dealerhand.value -= 10;
-	dealerhand.softaces --;
+    h->value += getCardValue(h->cards[h->num]);
+    if (h->value > 21 && h->softaces > 0){
+	h->value -= 10;
+	h->softaces --;
     }
-    dealerhand.num++;
+    h->num++;
     
-    if (dealerhand.value == 21){
-	dealerhand.status = Done;
-    } else if (dealerhand.value > 21){
-	dealerhand.status = Bust;
+    if (h->value == 21){
+	h->status = Done;
+    } else if (h->value > 21){
+	h->status = Bust;
     }
 
 }
 
-void playerHit(){    
-
-    playerhand.cards[playerhand.num] = drawCard();
-    if (playerhand.cards[playerhand.num] % 13 == 0){
-	playerhand.softaces++;
-    }
-    playerhand.value += getCardValue(playerhand.cards[playerhand.num]);
-    
-    if (playerhand.value > 21 && playerhand.softaces > 0){
-	playerhand.value -= 10;
-	playerhand.softaces --;
-    }
-    playerhand.num++;
-    
-    if (playerhand.value == 21){
-	playerhand.status = Done;
-    } else if (playerhand.value > 21){
-	playerhand.status = Bust;
-    }
-    
-}
 
 void dealHands(){
     //burnCard();
 
-    playerHit();
-    playerHit();
-    dealerHit();
-    dealerHit();
+    hitHand(&dealerhand);
+    hitHand(&playerhand);
+    hitHand(&dealerhand);
+    hitHand(&playerhand);
 
     printHands(dealerhand,playerhand);
 
@@ -288,7 +267,7 @@ void playerTurn(){
 	    break;
 	} else if (a1 == 'd' && canDouble){
 	    
-	    playerHit();
+	    hitHand(&playerhand);
 	    playerhand.bet *= 2;
 	    if (playerhand.status == InPlay){
 		playerhand.status = Done;
@@ -301,7 +280,7 @@ void playerTurn(){
 	    //
 	    printf("split not implemented yet\n");
 	} else if (a1 == 'h'){
-	    playerHit();
+	    hitHand(&playerhand);
 	    printHands(dealerhand,playerhand); 
 	    if (playerhand.status != InPlay){
 		break;
@@ -324,7 +303,7 @@ void dealerTurn(){
     }
 
     while (dealerhand.value < 17){ // S17
-	dealerHit();
+	hitHand(&dealerhand);	
     }
     
 }
