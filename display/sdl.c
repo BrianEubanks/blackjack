@@ -294,7 +294,7 @@ void clearScreen(){
     SDL_RenderClear(renderer);
 }
 
-void printHands(hand dealerhand, hand playerhand){
+void printHands(hand* dealerhand, hand* playerhand){
 
     int d_card_x = 300;
     int d_card_y = 50;
@@ -307,7 +307,7 @@ void printHands(hand dealerhand, hand playerhand){
     
     int card_x = d_card_x;
     int card_y = d_card_y;    
-    int cards = dealerhand.num;
+    int cards = dealerhand->num;
     int card;
     int cardsp;
 
@@ -332,7 +332,7 @@ void printHands(hand dealerhand, hand playerhand){
 	if (c == 0){
 	    continue;
 	}
-        card = dealerhand.cards[c];
+        card = dealerhand->cards[c];
         cardsp = card%13;
         for (int x = 0; x < 16; x++){
             printf("\n");
@@ -356,7 +356,7 @@ void printHands(hand dealerhand, hand playerhand){
     //
     card_x = p_card_x;
     card_y = p_card_y;
-    cards = playerhand.num;
+    cards = playerhand->num;
     for (int c = 0; c < cards; c++){
 	card_x += 25;
 	card_y += 25;
@@ -371,7 +371,7 @@ void printHands(hand dealerhand, hand playerhand){
 		SDL_RenderDrawPoint(renderer, x, y);
 	    }
 	}
-	card = playerhand.cards[c];
+	card = playerhand->cards[c];
 	cardsp = card%13;
 	for (int x = 0; x < 16; x++){
 	    printf("\n");
@@ -395,7 +395,7 @@ void printHands(hand dealerhand, hand playerhand){
 }
     
 
-void printHandsFinal(hand dealerhand, hand playerhand){
+void printHandsFinal(hand* dealerhand, hand* playerhand){
     printHands(dealerhand,playerhand);
     
     int card;
@@ -409,7 +409,7 @@ void printHandsFinal(hand dealerhand, hand playerhand){
     //
     // Draw Dealer Hole Card
     //
-    card = dealerhand.cards[0];
+    card = dealerhand->cards[0];
     cardsp = card%13;
     if (cardsp > 9){
         cardsp = 9;

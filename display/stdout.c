@@ -3,6 +3,8 @@
 
 #include "display.h"
 
+extern uint64_t stackbase;
+
 const char* cardstr[] = {"A","2","3","4","5","6","7","8","9","10","J","Q","K",
                          "A","2","3","4","5","6","7","8","9","10","J","Q","K",
                          "A","2","3","4","5","6","7","8","9","10","J","Q","K",
@@ -42,24 +44,36 @@ char getInput(){
     return a1;
 }
 
-void printHands(hand dealerhand, hand playerhand){
-    printf("\nDealer: %s *", cardstr[dealerhand.cards[0]]);
+void printHands(hand* dealerhand, hand* playerhand){
+    uint8_t stack;
 
+
+    printf("\nStackBase: 0x%llx\n",stackbase);
+    printf("StackOffset: %p\n",&stack);
+    printf("StackSize: %llu\n",stackbase - (uint64_t)&stack);
+    
+    printf("\nDealer: %s *", cardstr[dealerhand->cards[0]]);
     printf("\nPlayer:");
-    for (int i = 0; i < playerhand.num; i++){
-        printf(" %s", cardstr[playerhand.cards[i]]);
+    for (int i = 0; i < playerhand->num; i++){
+        printf(" %s", cardstr[playerhand->cards[i]]);
     }
     printf("\n");
 }
 
-void printHandsFinal(hand dealerhand, hand playerhand){
+void printHandsFinal(hand* dealerhand, hand* playerhand){
+    uint8_t stack;
+
+    printf("\nStackBase: 0x%llx\n",stackbase);
+    printf("StackOffset: %p\n",&stack);
+    printf("StackSize: %llu\n",stackbase - (uint64_t)&stack);
+
     printf("\nDealer:");
-    for (int i = 0; i < dealerhand.num; i++){
-        printf(" %s", cardstr[dealerhand.cards[i]]);
+    for (int i = 0; i < dealerhand->num; i++){
+        printf(" %s", cardstr[dealerhand->cards[i]]);
     }
     printf("\nPlayer:");
-    for (int i = 0; i < playerhand.num; i++){
-        printf(" %s", cardstr[playerhand.cards[i]]);
+    for (int i = 0; i < playerhand->num; i++){
+        printf(" %s", cardstr[playerhand->cards[i]]);
     }
     printf("\n");
 }

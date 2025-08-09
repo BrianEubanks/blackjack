@@ -67,6 +67,8 @@ static const bool split_table[10][10] = {
  {1,1,1,1,1,1,1,1,1,1}};// AA 13
 
 
+uint64_t stackbase;
+
 //
 // Hands
 //
@@ -234,12 +236,12 @@ void dealHands(){
     hitHand(&dealerhand);
     hitHand(&playerhand);
 
-    printHands(dealerhand,playerhand);
+    printHands(&dealerhand,&playerhand);
 
 }
     
-bool isPair(hand playerhand){
-    if (playerhand.cards[0] % 13 == playerhand.cards[1] % 13){
+bool isPair(hand* playerhand){
+    if (playerhand->cards[0] % 13 == playerhand->cards[1] % 13){
 	return true;
     }
     return false;
@@ -248,7 +250,7 @@ bool isPair(hand playerhand){
 void playerTurn(){
     
     bool canDouble = true;
-    bool canSplit = isPair(playerhand); // Rules
+    bool canSplit = isPair(&playerhand); // Rules
 
     if (playerhand.value == 21){
 	playerhand.status = Done;
@@ -272,7 +274,7 @@ void playerTurn(){
 	    if (playerhand.status == InPlay){
 		playerhand.status = Done;
 	    }	
-	    printHands(dealerhand,playerhand);
+	    printHands(&dealerhand,&playerhand);
 	    break;
 	} else if (a1 == 'x' && canSplit){
 	    //
@@ -281,7 +283,7 @@ void playerTurn(){
 	    printf("split not implemented yet\n");
 	} else if (a1 == 'h'){
 	    hitHand(&playerhand);
-	    printHands(dealerhand,playerhand); 
+	    printHands(&dealerhand,&playerhand); 
 	    if (playerhand.status != InPlay){
 		break;
 	    }
@@ -358,7 +360,7 @@ void playGame(){
 
 	playHand();
 	
-	printHandsFinal(dealerhand, playerhand);	
+	printHandsFinal(&dealerhand, &playerhand);	
  
 	do {
 	    
@@ -390,6 +392,9 @@ void playGame(){
 
 
 int main(int argc, char** argv){
+    uint8_t stack1 = 0;
+    stackbase = (uint64_t) &stack1;
+    printf("Stackbase: 0x%llx\n",stackbase);
 
     srand(time(NULL));   // Initialization, should only be called once.
 

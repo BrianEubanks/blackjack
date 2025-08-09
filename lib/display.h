@@ -17,7 +17,7 @@ void showGamePrompt(bool canDouble, bool canSplit);
 void showRunningCount(int count);
 
 
-void printHands(hand dealerhand, hand playerhand);
-void printHandsFinal(hand dealerhand, hand playerhand);
+void printHands(hand* dealerhand, hand* playerhand);
+void printHandsFinal(hand* dealerhand, hand* playerhand);
 
 #endif
