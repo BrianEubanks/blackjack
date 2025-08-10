@@ -244,6 +244,37 @@ void initializeDisplay(){
 
 void showGameOverPrompt(){
     printf("[d][c][q]\n");
+    int control_x = 50;
+    int control_y = 300;
+
+    int pmap[] = {2,5,4};
+
+    SDL_SetRenderDrawColor(renderer, 0, 104, 1, 255);
+    for (int x = 0; x < 256; x++){
+	for (int y = 0; y < 16; y++){
+	    SDL_RenderDrawPoint(renderer, x+control_x, y+control_y);
+	}
+    }
+
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+ 
+    for (int p = 0; p < 3; p++){    
+
+	for (int x = 0; x < 16; x++){ 
+	    for (int y = 0; y < 16; y++){
+		if (control[pmap[p]][y/2][x/2] == 1){
+		    SDL_RenderDrawPoint(renderer, x+control_x, y+control_y);
+		}
+	    }
+	}
+
+	control_x += 50;
+
+    }
+
+
+    SDL_RenderPresent(renderer);
 }
 
 void showGamePrompt(bool canDouble, bool canSplit){
@@ -261,6 +292,13 @@ void showGamePrompt(bool canDouble, bool canSplit){
 	}
     }
     printf("\n");
+
+    SDL_SetRenderDrawColor(renderer, 0, 104, 1, 255);
+    for (int x = 0; x < 256; x++){
+	for (int y = 0; y < 16; y++){
+	    SDL_RenderDrawPoint(renderer, x+control_x, y+control_y);
+	}
+    }
 
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
