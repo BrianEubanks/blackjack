@@ -115,7 +115,7 @@ void checkBasicStrategy(char m, bool canDouble, bool canSplit){
     uint8_t index;
     move playermove;
     
-    upcard = dealerhand.cards[0] % 13;
+    upcard = dealerhand.cards[1] % 13;
     if (upcard > 9){
 	upcard = 9;
     }
@@ -149,33 +149,33 @@ void checkBasicStrategy(char m, bool canDouble, bool canSplit){
 
 	if (split_table[index][upcard]){
 	    if (playermove == Split){
-		printf("correct\n");
+		printBasicStrategy(0xFF);
 	    } else {
-		printf("incorrect\n");
+		printBasicStrategy(3);
 	    }
-	    return;
 	} else {
-	    if (playermove == 'x'){
-		printf("incorrect\n");
+	    if (playermove == Split){
+		printBasicStrategy(hard_table[index-1][upcard]);
 	    }
 	}
+	return;
     }
 
     if (soft > 0){
 	index = value-13;
 	if (soft_table[index][upcard] == playermove){
-	    printf("correct\n");    
+            printBasicStrategy(0xFF);
 	} else {
-	    printf("incorrect\n");
+            printBasicStrategy(soft_table[index][upcard]);
 	}
 	return; 
     }
 
     index = value - 5;
     if (hard_table[index][upcard] == playermove){
-	printf("correct\n");
+        printBasicStrategy(0xFF);
     } else {
-	printf("incorrect\n");
+        printBasicStrategy(hard_table[index][upcard]);
     }
 
     return;
@@ -378,10 +378,7 @@ void playGame(){
 	    break;
 	}
 
-    }
-
-	
-    
+    }    
 	    
     printf("Stats:\n");
     printf(" Wins: %d\n",playerwincount);

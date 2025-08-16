@@ -453,9 +453,9 @@ void printHandsFinal(hand* dealerhand, hand* playerhand){
         cardsp = 9;
     }
     for (int x = 0; x < 16; x++){
-        printf("\n");
+        
         for (int y = 0; y < 16; y++){
-            //printf("%d",sprites[cardsp][x/2][y/2]);
+            
             if (sprites[cardsp][y/2][x/2] == 1){
                 if (card > 25){
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -467,5 +467,31 @@ void printHandsFinal(hand* dealerhand, hand* playerhand){
 	}
     }
     // Show the change on the screen
+    SDL_RenderPresent(renderer);
+}
+
+//
+// 0 correct
+// 1 not correct
+//
+void printBasicStrategy(uint8_t check){
+    int check_x = 50;
+    int check_y = 350;
+
+    for (int x = 0; x < 16; x++){
+
+        for (int y = 0; y < 16; y++){
+	    if (check != 0xFF){ 
+		if (control[check][y/2][x/2] == 1){ 
+		    SDL_SetRenderDrawColor(renderer, 185, 0, 0, 255);
+		} else {
+		    SDL_SetRenderDrawColor(renderer, 0, 104, 1, 255);
+		}
+	    } else {
+		SDL_SetRenderDrawColor(renderer, 0, 104, 1, 255);
+	    }
+            SDL_RenderDrawPoint(renderer, x+check_x+5, y+check_y+5);
+        }
+    }
     SDL_RenderPresent(renderer);
 }

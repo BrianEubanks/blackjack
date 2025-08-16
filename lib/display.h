@@ -16,6 +16,7 @@ char getInput();
 void showGamePrompt(bool canDouble, bool canSplit);
 void showRunningCount(int count);
 
+void printBasicStrategy(uint8_t check);
 
 void printHands(hand* dealerhand, hand* playerhand);
 void printHandsFinal(hand* dealerhand, hand* playerhand);
