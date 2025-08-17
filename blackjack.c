@@ -9,14 +9,6 @@
 #include "deck.h"
 #include "display.h"
 
-typedef enum move {
-    Hit = 0,
-    Stand = 1,
-    Double = 2,
-    Split = 3,
-    Surr = 4,
-    max = 255,
-} move;
 
 //
 // S17 Basic Strategy
@@ -113,7 +105,8 @@ void checkBasicStrategy(char m, bool canDouble, bool canSplit){
     uint8_t value;
     uint8_t soft;
     uint8_t index;
-    move playermove;
+    move playermove = 0xFF;
+    move bookmove = 0xFF;
     
     upcard = dealerhand.cards[1] % 13;
     if (upcard > 9){
@@ -146,37 +139,33 @@ void checkBasicStrategy(char m, bool canDouble, bool canSplit){
 	if (index != 9){
 	    index /= 2;
 	}
-
+	
 	if (split_table[index][upcard]){
-	    if (playermove == Split){
-		printBasicStrategy(0xFF);
-	    } else {
-		printBasicStrategy(3);
-	    }
-	} else {
-	    if (playermove == Split){
-		printBasicStrategy(hard_table[index-1][upcard]);
-	    }
+	    bookmove = Split;
 	}
-	return;
-    }
-
-    if (soft > 0){
-	index = value-13;
-	if (soft_table[index][upcard] == playermove){
-            printBasicStrategy(0xFF);
-	} else {
-            printBasicStrategy(soft_table[index][upcard]);
-	}
-	return; 
-    }
-
-    index = value - 5;
-    if (hard_table[index][upcard] == playermove){
-        printBasicStrategy(0xFF);
+	
     } else {
-        printBasicStrategy(hard_table[index][upcard]);
+
+	if (soft > 0 && bookmove == 0xFF){
+	    index = value-13;
+	    bookmove = soft_table[index][upcard];
+	} else {
+	    index = value - 5;
+	    bookmove = hard_table[index][upcard];
+	}
     }
+
+
+
+    printf("playermove: %d\n",playermove);
+    printf("bookmove: %d\n",bookmove);
+
+    if (!canDouble && bookmove == Double){
+	bookmove = Hit;
+	printf("degradedouble: %d\n",bookmove);
+    }
+
+    printBasicStrategy(bookmove, playermove);
 
     return;
 

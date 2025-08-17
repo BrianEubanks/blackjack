@@ -474,15 +474,15 @@ void printHandsFinal(hand* dealerhand, hand* playerhand){
 // 0 correct
 // 1 not correct
 //
-void printBasicStrategy(uint8_t check){
+void printBasicStrategy(move bookmove, move playermove){
     int check_x = 50;
     int check_y = 350;
 
     for (int x = 0; x < 16; x++){
 
         for (int y = 0; y < 16; y++){
-	    if (check != 0xFF){ 
-		if (control[check][y/2][x/2] == 1){ 
+	    if (bookmove != playermove){ 
+		if (control[bookmove][y/2][x/2] == 1){ 
 		    SDL_SetRenderDrawColor(renderer, 185, 0, 0, 255);
 		} else {
 		    SDL_SetRenderDrawColor(renderer, 0, 104, 1, 255);

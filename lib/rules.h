@@ -38,4 +38,13 @@ typedef struct _hand {
     handstatus  status;
 } hand;
 
+typedef enum move {
+    Hit = 0,
+    Stand = 1,
+    Double = 2,
+    Split = 3,
+    Surr = 4,
+    max = 255,
+} move;
+
 #endif

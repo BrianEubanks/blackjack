@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "display.h"
+#include "rules.h"
 
 extern uint64_t stackbase;
 
@@ -47,11 +48,11 @@ char getInput(){
 void printHands(hand* dealerhand, hand* playerhand){
     uint8_t stack;
 
-
+/*
     printf("\nStackBase: 0x%llx\n",stackbase);
     printf("StackOffset: %p\n",&stack);
     printf("StackSize: %llu\n",stackbase - (uint64_t)&stack);
-    
+*/  
     printf("\nDealer: * %s", cardstr[dealerhand->cards[1]]);
     printf("\nPlayer:");
     for (int i = 0; i < playerhand->num; i++){
@@ -62,11 +63,11 @@ void printHands(hand* dealerhand, hand* playerhand){
 
 void printHandsFinal(hand* dealerhand, hand* playerhand){
     uint8_t stack;
-
+/*
     printf("\nStackBase: 0x%llx\n",stackbase);
     printf("StackOffset: %p\n",&stack);
     printf("StackSize: %llu\n",stackbase - (uint64_t)&stack);
-
+*/
     printf("\nDealer:");
     for (int i = 0; i < dealerhand->num; i++){
         printf(" %s", cardstr[dealerhand->cards[i]]);
@@ -82,10 +83,10 @@ void printHandsFinal(hand* dealerhand, hand* playerhand){
 // 0 correct
 // 1 not correct
 //
-void printBasicStrategy(uint8_t check){
-    if (check == 0){
-	printf("correct\n");
-    } else if (check == 1){
-	printf("incorrect\n");
+void printBasicStrategy(move bookmove, move playermove){
+    if (bookmove  == playermove){
+	return; // correct
+    } else {
+	printf("incorrect: %d\n",bookmove);
     }
 }
