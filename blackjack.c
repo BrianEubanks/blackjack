@@ -344,7 +344,7 @@ void dealerTurn(){
     for (int h = 0; h < handcount; h++){
 	if (playerhands[h].status != Bust){
 	    skip = false;
-	    return;
+	    break;
 	}
     }
 
