@@ -61,7 +61,7 @@ void printHands(hand* dealerhand, hand* playerhand){
     printf("\n");
 }
 
-void printHandsFinal(hand* dealerhand, hand* playerhand){
+void printHandsFinal(hand* dealerhand, hand* playerhand, int h){
     uint8_t stack;
 /*
     printf("\nStackBase: 0x%llx\n",stackbase);
@@ -72,11 +72,14 @@ void printHandsFinal(hand* dealerhand, hand* playerhand){
     for (int i = 0; i < dealerhand->num; i++){
         printf(" %s", cardstr[dealerhand->cards[i]]);
     }
-    printf("\nPlayer:");
-    for (int i = 0; i < playerhand->num; i++){
-        printf(" %s", cardstr[playerhand->cards[i]]);
+
+    for (int j = 0; j < h; j++){
+	printf("\nPlayer:");
+	for (int i = 0; i < playerhand[j].num; i++){
+	    printf(" %s", cardstr[playerhand[j].cards[i]]);
+	}
+	printf("\n");
     }
-    printf("\n");
 }
 
 //

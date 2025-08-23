@@ -61,12 +61,14 @@ static const bool split_table[10][10] = {
 
 uint64_t stackbase;
 
+#define MAX_SPLIT 10
+
 //
 // Hands
 //
 hand dealerhand;
-hand playerhand;
-
+hand playerhands[MAX_SPLIT];
+uint8_t handcount = 0;
 
 //
 // Game Stats
@@ -100,14 +102,15 @@ void printTable(){
 
 }
 
-void checkBasicStrategy(char m, bool canDouble, bool canSplit){
+void checkBasicStrategy(char m, int h, bool canDouble, bool canSplit){
     uint8_t upcard;
     uint8_t value;
     uint8_t soft;
     uint8_t index;
     move playermove = 0xFF;
     move bookmove = 0xFF;
-    
+    hand playerhand = playerhands[h];
+
     upcard = dealerhand.cards[1] % 13;
     if (upcard > 9){
 	upcard = 9;
@@ -172,24 +175,31 @@ void checkBasicStrategy(char m, bool canDouble, bool canSplit){
 }
 
 void clearHands(){
+
+    // DealerHand
     for (int i = 0; i < HAND_SIZE; i++){
 	dealerhand.cards[i] = 0;
-	playerhand.cards[i] = 0;
     }
     dealerhand.num = 0;
-    playerhand.num = 0;
-
     dealerhand.value = 0;
-    playerhand.value = 0;
-
-    playerhand.softaces = 0;
     dealerhand.softaces = 0;
-
-    playerhand.bet = 0;
     dealerhand.bet = 0;
-
-    playerhand.status = 0;
     dealerhand.status = 0;
+
+    //
+    // PlayerHands
+    //
+    for (int h = 0; h < MAX_SPLIT; h++){
+	for (int i = 0; i < HAND_SIZE; i++){
+	    playerhands[h].cards[i] = 0;   
+	}
+	playerhands[h].num = 0;
+	playerhands[h].value = 0;
+	playerhands[h].softaces = 0;
+	playerhands[h].bet = 0;
+	playerhands[h].status = 0;
+    }
+    handcount = 1;
 
     clearScreen();
 }
@@ -216,33 +226,65 @@ void hitHand(hand* h){
 
 }
 
+//
+// Split hand[h] to hand[handcount]
+//   Appends split to the first empty slot in playerhands array
+// Increment handcount
+//
+void splitHands(int h){
+    int a = h;
+    int b = handcount;
+
+    playerhands[b].cards[0] = playerhands[a].cards[1];
+    playerhands[a].cards[1] = 0;
+
+    playerhands[a].num = 1;
+    playerhands[b].num = 1;
+
+    playerhands[a].value /= 2;
+    playerhands[b].value = playerhands[a].value;
+
+    if (playerhands[a].softaces > 0){
+	playerhands[a].softaces = 1;
+	playerhands[b].softaces = 1;
+    } else {	
+	playerhands[a].softaces = 0;
+	playerhands[b].softaces = 0;
+    }
+    
+    playerhands[b].bet = playerhands[a].bet;
+
+    playerhands[b].status = playerhands[a].status;
+
+    handcount++;
+}
 
 void dealHands(){
     //burnCard();
 
     hitHand(&dealerhand);
-    hitHand(&playerhand);
+    hitHand(&playerhands[0]);
     hitHand(&dealerhand);
-    hitHand(&playerhand);
+    hitHand(&playerhands[0]);
 
-    printHands(&dealerhand,&playerhand);
+    printHands(&dealerhand,&playerhands[0]);
 
 }
     
-bool isPair(hand* playerhand){
-    if (playerhand->cards[0] % 13 == playerhand->cards[1] % 13){
+bool isPair(int h){
+    if (playerhands[h].cards[0] % 13 == playerhands[h].cards[1] % 13){
 	return true;
     }
     return false;
 }
 
-void playerTurn(){
+void playHand(int h){
     
     bool canDouble = true;
-    bool canSplit = isPair(&playerhand); // Rules
+    bool canSplit = isPair(h); // Rules
 
-    if (playerhand.value == 21){
-	playerhand.status = Done;
+    if (playerhands[h].value == 21){
+	playerhands[h].status = Done;
 	return;
     }
     
@@ -251,29 +293,34 @@ void playerTurn(){
 	showGamePrompt(canDouble, canSplit);	
 	char a1 = getInput();
 
-	checkBasicStrategy (a1,canDouble,canSplit);
+	checkBasicStrategy (a1,h,canDouble,canSplit);
 
     	if (a1 == 's'){
-	    playerhand.status = Done;
+	    playerhands[h].status = Done;
 	    break;
 	} else if (a1 == 'd' && canDouble){
 	    
-	    hitHand(&playerhand);
-	    playerhand.bet *= 2;
-	    if (playerhand.status == InPlay){
-		playerhand.status = Done;
+	    hitHand(&playerhands[h]);
+	    playerhands[h].bet *= 2;
+	    if (playerhands[h].status == InPlay){
+		playerhands[h].status = Done;
 	    }	
-	    printHands(&dealerhand,&playerhand);
+	    printHands(&dealerhand,&playerhands[h]);
 	    break;
 	} else if (a1 == 'x' && canSplit){
-	    //
-	    // Split Allocate another hand and do split routine
-	    //
-	    printf("split not implemented yet\n");
+	    if (handcount >= MAX_SPLIT){
+		printf("Too many splits\n");
+		canSplit = false;
+		continue;
+	    } else {
+		splitHands(h);
+		continue;
+	    }
+	    
 	} else if (a1 == 'h'){
-	    hitHand(&playerhand);
-	    printHands(&dealerhand,&playerhand); 
-	    if (playerhand.status != InPlay){
+	    hitHand(&playerhands[h]);
+	    printHands(&dealerhand,&playerhands[h]); 
+	    if (playerhands[h].status != InPlay){
 		break;
 	    }
 	} else {
@@ -283,13 +330,25 @@ void playerTurn(){
 	canSplit = false;
     
     } while (true);
+}
 
-    
+void playerTurn(){
+    for (int h = 0; h < handcount; h++){
+	playHand(h);
+    }
 }
 
 void dealerTurn(){
+    bool skip = true;
 
-    if (playerhand.status == Bust){
+    for (int h = 0; h < handcount; h++){
+	if (playerhands[h].status != Bust){
+	    skip = false;
+	    return;
+	}
+    }
+
+    if (skip){
 	return;
     }
 
@@ -300,8 +359,8 @@ void dealerTurn(){
 }
 
 
-void scoreHands(){
-    if (playerhand.status == Bust){
+void scoreHand(int h){
+    if (playerhands[h].status == Bust){
 	dealerwincount++;
 	return;
     }
@@ -311,9 +370,9 @@ void scoreHands(){
 	return;
     }
 
-    if (playerhand.value > dealerhand.value){
+    if (playerhands[h].value > dealerhand.value){
 	playerwincount++;
-    } else if (dealerhand.value > playerhand.value){
+    } else if (dealerhand.value > playerhands[h].value){
 	dealerwincount++;
     } else {
 	tiecount++;
@@ -322,18 +381,25 @@ void scoreHands(){
     return;
 }
 
-void playHand(){ 
+void scoreRound(){
+    for (int h = 0; h < handcount; h++){
+	scoreHand(h);
+    }
+}
+
+void playRound(){ 
 
     clearHands();
 
     // Bet
+
     dealHands();
 
     playerTurn();
 
     dealerTurn();
 
-    scoreHands();
+    scoreRound();
 
 }
     
@@ -347,9 +413,9 @@ void playGame(){
     
     while (true){
 
-	playHand();
+	playRound();
 	
-	printHandsFinal(&dealerhand, &playerhand);	
+	printHandsFinal(&dealerhand, (void*) &playerhands, handcount);	
  
 	do {
 	    

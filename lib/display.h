@@ -19,6 +19,6 @@ void showRunningCount(int count);
 void printBasicStrategy(move bookmove, move playermove);
 
 void printHands(hand* dealerhand, hand* playerhand);
-void printHandsFinal(hand* dealerhand, hand* playerhand);
+void printHandsFinal(hand* dealerhand, hand* playerhand, int h);
 
 #endif
