@@ -147,7 +147,8 @@ void checkBasicStrategy(char m, int h, bool canDouble, bool canSplit){
 	    bookmove = Split;
 	}
 	
-    } else {
+    } 
+    if (bookmove != Split) {
 
 	if (soft > 0 && bookmove == 0xFF){
 	    index = value-13;
