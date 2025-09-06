@@ -284,7 +284,7 @@ void playHand(int h){
     bool canSplit = isPair(h); // Rules
 
     if (playerhands[h].value == 21){
-	playerhands[h].status = Done;
+	playerhands[h].status = Natural;
 	return;
     }
     
@@ -341,16 +341,27 @@ void playerTurn(){
 void dealerTurn(){
     bool skip = true;
 
+    //
+    // Dealer doesn't draw if player busted
+    //
     for (int h = 0; h < handcount; h++){
 	if (playerhands[h].status != Bust){
 	    skip = false;
 	    break;
 	}
     }
-
     if (skip){
 	return;
     }
+
+    //
+    // Dealer doesn't draw if player has a Natural
+    //   Only check 1st hand
+    //
+    if (playerhands[0].status == Natural){
+	return;
+    }
+
 
     while (dealerhand.value < 17){ // S17
 	hitHand(&dealerhand);	

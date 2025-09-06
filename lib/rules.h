@@ -9,14 +9,16 @@
 
 //
 // Hand Status
-//   InPlay < 21
-//   Done   = 21 or Stand
-//   Bust   > 21
+//   InPlay 	< 21
+//   Done   	= 21 or Stand
+//   Bust   	> 21
+//   Natural 	Blackjack
 //
 typedef enum {
     InPlay,
     Done,
-    Bust
+    Bust,
+    Natural
 } handstatus;
 
 //

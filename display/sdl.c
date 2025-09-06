@@ -433,7 +433,7 @@ void printHands(hand* dealerhand, hand* playerhand){
 }
     
 
-void printHandsFinal(hand* dealerhand, hand* playerhand){
+void printHandsFinal(hand* dealerhand, hand* playerhand, int h){
     printHands(dealerhand,playerhand);
     
     int card;
